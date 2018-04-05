@@ -158,20 +158,9 @@ config_change (
 
 int
 config_init (void) {
-	struct t_config_option *result;
-	char **rubbish = NULL;
-
 	if (SN_DEBUG) {
 		weechat_printf(NULL, "[simplenotify] Config init");
 	}
-
-	// weechat_config_search_with_string (
-	// 	"simplenotify.var.foo",
-	// 	&config_file,
-	// 	&config_section,
-	// 	&result,
-	// 	rubbish
-	// );
 
 	config_file = weechat_config_new (
 		"simplenotify", // Config file name
@@ -181,233 +170,106 @@ config_init (void) {
 	);
 
 	if (config_file == NULL) {
-		config_file = weechat_config_new (
-			"simplenotify", // Config file name
-		  NULL, // No callback for /reload
-		  NULL, // No pointer to callback
-			NULL // No pointer to callback data
-		);
-		if (config_file == NULL) {
-			weechat_printf (NULL, "%s[simplenotify] Error writing new config file", weechat_prefix("error"));
-			return WEECHAT_CONFIG_WRITE_ERROR;
-		} else {
-			weechat_printf (NULL, "[simplenotify] Created new config file");
-		}
+		weechat_printf (NULL, "%s[simplenotify] Error writing new config file", weechat_prefix("error"));
+		return WEECHAT_CONFIG_WRITE_ERROR;
 	}
 
-	config_section = weechat_config_search_section (
+	config_section = weechat_config_new_section (
 		config_file,
-		"var"
+		"var",
+		0, // User can't add new options
+		0, // User can't delete options
+		NULL, // No callback for read
+		NULL, // No pointer for read callback
+		NULL, // No pointer for read callback data
+		NULL, // No callback for write
+		NULL,
+		NULL,
+		NULL, // Callback for writing defaults
+		NULL,
+		NULL,
+		NULL, // No callback for creating options
+		NULL,
+		NULL,
+		NULL, // No callback for deleting options
+		NULL,
+		NULL
 	);
 
-	if (config_section == NULL) {
-		// var section not found
-		if (SN_DEBUG) {
-			weechat_printf(NULL, "[simplenotify] var section not found");
-		}
-
-		config_section = weechat_config_new_section (
-			config_file,
-			"var",
-			0, // User can't add new options
-			0, // User can't delete options
-			NULL, // No callback for read
-			NULL, // No pointer for read callback
-			NULL, // No pointer for read callback data
-			NULL, // No callback for write
-			NULL,
-			NULL,
-			NULL, // Callback for writing defaults
-			NULL,
-			NULL,
-			NULL, // No callback for creating options
-			NULL,
-			NULL,
-			NULL, // No callback for deleting options
-			NULL,
-			NULL
-		);
-
-		if (config_section == NULL) {
-			return WEECHAT_CONFIG_WRITE_ERROR;
-		}
-
-		// Create enabled option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"enabled",
-			"boolean",
-			"Enable or disable simplenotify.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"on", // Default
-			"on", // Value
-			0, // null value not allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-
-		// Create command option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"command",
-			"string",
-			"Shell command to run. {type} will be replaced with the type of message it is, e.g. Notice, Query. {origin} will be replaced with who/whatever sent the message, such as the person's nickname or server. {message} will be replaced with the message.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Default
-			"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Value
-			1, // null value allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-
-		// Create tags option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"tags",
-			"string",
-			"A comma separated list of message tags that will trigger a notification.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"notify_private,notify_highlight,irc_notice", // Default
-			"notify_private,notify_highlight,irc_notice", // Value
-			1, // null value allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-
-		weechat_config_write (config_file);
-	}
-
-	result = weechat_config_search_option (
+	// enabled option
+	weechat_config_new_option (
 		config_file,
 		config_section,
-		"enabled"
+		"enabled",
+		"boolean",
+		"Enable or disable simplenotify.",
+		NULL, // No list of string values
+		0, // No min
+		0, // No max
+		"on", // Default
+		"on", // Value
+		0, // null value not allowed
+		&config_check_value, // callback_check_value
+		NULL,
+		NULL,
+		&config_change, // callback_change
+		NULL,
+		NULL,
+		NULL, // callback delete
+		NULL,
+		NULL
 	);
-	if (result == NULL) {
-		if (SN_DEBUG) {
-			weechat_printf(NULL, "[simplenotify] enabled option not found");
-		}
-		// Create enabled option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"enabled",
-			"boolean",
-			"Enable or disable simplenotify.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"on", // Default
-			"on", // Value
-			0, // null value not allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-	}
 
-	result = weechat_config_search_option (
+	// command option
+	weechat_config_new_option (
 		config_file,
 		config_section,
-		"command"
+		"command",
+		"string",
+		"Shell command to run. {type} will be replaced with the type of message it is, e.g. Notice, Query. {origin} will be replaced with who/whatever sent the message, such as the person's nickname or server. {message} will be replaced with the message.",
+		NULL, // No list of string values
+		0, // No min
+		0, // No max
+		"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Default
+		"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Value
+		1, // null value allowed
+		&config_check_value, // callback_check_value
+		NULL,
+		NULL,
+		&config_change, // callback_change
+		NULL,
+		NULL,
+		NULL, // callback delete
+		NULL,
+		NULL
 	);
-	if (result == NULL) {
-		if (SN_DEBUG) {
-			weechat_printf(NULL, "[simplenotify] command option not found");
-		}
-		// Create command option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"command",
-			"string",
-			"Shell command to run. {type} will be replaced with the type of message it is, e.g. Notice, Query. {origin} will be replaced with who/whatever sent the message, such as the person's nickname or server. {message} will be replaced with the message.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Default
-			"notify-send -t 3000 -a 'WeeChat' -c im.received '{type} from {origin}' '{message}'", // Value
-			1, // null value allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-	}
 
-	result = weechat_config_search_option (
+	// tags option
+	weechat_config_new_option (
 		config_file,
 		config_section,
-		"tags"
+		"tags",
+		"string",
+		"A comma separated list of message tags that will trigger a notification.",
+		NULL, // No list of string values
+		0, // No min
+		0, // No max
+		"notify_private,notify_highlight,irc_notice", // Default
+		"notify_private,notify_highlight,irc_notice", // Value
+		1, // null value allowed
+		&config_check_value, // callback_check_value
+		NULL,
+		NULL,
+		&config_change, // callback_change
+		NULL,
+		NULL,
+		NULL, // callback delete
+		NULL,
+		NULL
 	);
-	if (result == NULL) {
-		if (SN_DEBUG) {
-			weechat_printf(NULL, "[simplenotify] tags option not found");
-		}
-		// Create tags option
-		weechat_config_new_option (
-			config_file,
-			config_section,
-			"tags",
-			"string",
-			"A comma separated list of message tags that will trigger a notification.",
-			NULL, // No list of string values
-			0, // No min
-			0, // No max
-			"notify_private,notify_highlight,irc_notice", // Default
-			"notify_private,notify_highlight,irc_notice", // Value
-			1, // null value allowed
-			&config_check_value, // callback_check_value
-			NULL,
-			NULL,
-			&config_change, // callback_change
-			NULL,
-			NULL,
-			NULL, // callback delete
-			NULL,
-			NULL
-		);
-	}
+
+	weechat_config_read (config_file);
+	weechat_config_write (config_file);
 
 	return 0;
 }
