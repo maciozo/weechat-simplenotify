@@ -1,5 +1,7 @@
 #pragma once
 
+#define SN_DEBUG 1
+
 #define MSG_OTHER 1
 #define MSG_HIGHLIGHT 2
 #define MSG_QUERY 4
@@ -44,4 +46,19 @@ int weechat_plugin_init (
 
 int weechat_plugin_end (
 	struct t_weechat_plugin *plugin
+);
+
+int
+config_check_value (
+	const void *pointer,
+  void *data,
+  struct t_config_option *option,
+  const char *value
+);
+
+void
+config_change (
+	const void *pointer,
+  void *data,
+  struct t_config_option *option
 );
