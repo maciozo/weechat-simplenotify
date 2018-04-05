@@ -75,6 +75,7 @@ print_cb (
 	// formatted_command = str_replace(tags_command->command, "{origin}", "Query");
 
 	formatted_command = str_replace(formatted_command, "{message}", (char*) message);
+	formatted_command = str_replace(formatted_command, "{origin}", (char*) prefix);
 
 	weechat_printf (NULL, "[simplenotify] %s", formatted_command);
 
@@ -174,6 +175,8 @@ config_init (void) {
 		return WEECHAT_CONFIG_WRITE_ERROR;
 	}
 
+
+
 	config_section = weechat_config_new_section (
 		config_file,
 		"var",
@@ -268,8 +271,19 @@ config_init (void) {
 		NULL
 	);
 
-	weechat_config_read (config_file);
-	weechat_config_write (config_file);
+	switch (weechat_config_read (config_file)) {
+		case WEECHAT_CONFIG_READ_OK:
+			weechat_printf(NULL, "[simplenotify] Config read ok");
+			break;
+		case WEECHAT_CONFIG_READ_MEMORY_ERROR:
+			weechat_printf(NULL, "[simplenotify] Config read memory error");
+			break;
+		case WEECHAT_CONFIG_READ_FILE_NOT_FOUND:
+			weechat_printf(NULL, "[simplenotify] Config read file not found");
+			weechat_config_write (config_file);
+			break;
+	}
+
 
 	return 0;
 }
